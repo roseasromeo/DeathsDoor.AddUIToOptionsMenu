@@ -1,0 +1,95 @@
+## User-specific files
+# User-specific files for Visual Studio
+.vs/
+.vscode/
+.idea/
+config.targets
+
+# User-specific configuration files
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.dbmdl
+*.bak
+
+# Windows Installer files
+Thumbs.db
+ehthumbs.db
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Dd]Release/
+[Dd]eploy/
+[Aa]rchive/
+[Aa]ssemblyInfo.cs
+x64/
+x86/
+x64/Release/
+x86/Release/
+
+# Uncomment if you have a "build" directory you want to keep clean
+# /build/
+
+# If you use Unity, you should add the following
+# Temp/
+# Obj/
+
+# ASP.NET files
+# .aspnet/
+
+# Visual Studio for Mac
+.vscode/
+.idea/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Uncomment the next line if you use JetBrains Rider
+# .idea/
+
+# Files for the ReSharper plugin
+.idea/
+.reSharper/
+
+# User-specific build output
+.vs2019/
+.vs2018/
+
+## Build directories
+/bin/
+/obj/
+/out/
+
+# Package folders
+node_modules/
+.vs/
+.packages/
+
+# Auto-generated Unity3D files
+Library/
+Temp/
+obj/
+Build/
+
+# Ignore .NET Core local development settings
+# This might be helpful for shared codebases
+project.lock.json
+project.fragment.lock.json
+
+# JetBrains Rider
+.idea/
+
+# Microsoft Visual Studio for Mac
+.vscode/
+
