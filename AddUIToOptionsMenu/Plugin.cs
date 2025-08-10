@@ -2,7 +2,7 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 
-namespace DDoor.ReturnToSpawn;
+namespace DDoor.AddUITOOptionsMenu;
 
 [BepInPlugin("deathsdoor.adduitooptionsmenu", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
