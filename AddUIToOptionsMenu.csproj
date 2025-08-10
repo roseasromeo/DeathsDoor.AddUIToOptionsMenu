@@ -1,0 +1,70 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<RootNamespace>DDoor</RootNamespace>
+		<AssemblyName>AddUIToOptionsMenu</AssemblyName>
+		<AssemblyTitle>Add UI to Options Menu</AssemblyTitle>
+		<Product>AddUIToOptionsMenu</Product>
+		<Description>Adds UI Elements to the Options Menu in Death's Door</Description>
+		<Version>0.1.0</Version>
+		<TargetFramework>net472</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<RestoreAdditionalProjectSources>
+			https://api.nuget.org/v3/index.json;
+			https://nuget.bepinex.dev/v3/index.json;
+			https://nuget.samboy.dev/v3/index.json
+		</RestoreAdditionalProjectSources>
+		<OutputPath>$(ProjectDir)Build</OutputPath>
+	</PropertyGroup>
+
+	<!--
+		Create a file named 'config.targets' in the project's doot directory.
+		This should contain a 'PluginsPath' property pointing to your Death's Door plugins directory.
+	-->
+	<Import Project="config.targets" Condition="Exists('config.targets')" />
+
+	<!-- Custom properties -->
+	<PropertyGroup>
+		<ModName>AddUIToOptionsMenu</ModName>
+		<ExportDir>$(OutputPath)\Export</ExportDir>
+		<ManagedDir>$(PluginsPath)\..\..\DeathsDoor_Data\Managed</ManagedDir>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.2" PrivateAssets="all" />
+		<PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+		<PackageReference Include="BepInEx.Core" Version="5.*" />
+		<PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
+		<PackageReference Include="UnityEngine.Modules" Version="2019.4" IncludeAssets="compile" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+		<PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="Assembly-CSharp" Publicize="true">
+			<HintPath>$(ManagedDir)\Assembly-CSharp.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.UI">
+			<HintPath>$(ManagedDir)\UnityEngine.UI.dll</HintPath>
+		</Reference>
+		<Reference Include="Unity.TextMeshPro">
+			<HintPath>$(ManagedDir)\Unity.TextMeshPro.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	<Target Name="CopyMod" AfterTargets="PostBuildEvent">
+		<RemoveDir Directories="$(ExportDir)/" />
+		<MakeDir Directories="$(ExportDir)/" />
+		<MakeDir Directories="$(ExportDir)/zip/" />
+		<MakeDir Condition="!Exists('$(PluginsPath)/$(ModName)/')" Directories="$(PluginsPath)/$(ModName)/" />
+		<Copy SourceFiles="$(TargetPath);$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(PluginsPath)/$(ModName)/" />
+		<Copy SourceFiles="$(ProjectDir)\README.md;$(TargetPath);$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(ExportDir)/zip/" />
+		<ZipDirectory SourceDirectory="$(ExportDir)/zip/" DestinationFile="$(ExportDir)/$(ModName).zip" />
+		<RemoveDir Directories="$(ExportDir)/zip/" />
+		<GetFileHash Files="$(ExportDir)/$(ModName).zip" Algorithm="SHA256">
+			<Output TaskParameter="Items" ItemName="FilesWithHashes" />
+		</GetFileHash>
+		<WriteLinesToFile File="$(ExportDir)/SHA.txt" Lines="@(FilesWithHashes->'%(FileHash)')" Overwrite="true" Encoding="UTF-8" />
+	</Target>
+</Project>
