@@ -27,7 +27,7 @@ public class IngameUIManager
 
     private static UIMenuOptions uIMenuOptions = PathUtil.GetUIMenuOptions(RelevantScene.TitleScreen);
 
-    public static void AddOptionButton(OptionsButton optionsButton)
+    public static void AddOptionsButton(OptionsButton optionsButton)
     {
         addedOptionsButtons.Add(optionsButton);
     }
@@ -67,7 +67,7 @@ public class IngameUIManager
         GameObject button = optionsButton.AddOptionsButton(relevantScene);
         button?.transform.SetSiblingIndex(currentSiblingIndex);
         currentSiblingIndex += 1; //Increment the sibling index
-        optionsButton.OptionsPrompt?.AddOptionPrompt(relevantScene);
+        optionsButton.OptionsPrompt?.AddOptionsPrompt(relevantScene);
         addedButtonsCount += 1;
     }
 
