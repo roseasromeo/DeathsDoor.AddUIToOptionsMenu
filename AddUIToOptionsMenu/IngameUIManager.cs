@@ -17,12 +17,14 @@ public class IngameUIManager
     public static List<string> modifiedStrings = [];
     internal static Dictionary<string, Action<RelevantScene, UIAction>> registeredActions = [];
     internal static Dictionary<string, Action<RelevantScene, bool>> registeredPrompts = [];
+    internal static Dictionary<string, Action<RelevantScene>> registeredToggles = [];
 
     private static readonly List<OptionsButton> addedOptionsButtons = [];
+    private static readonly List<OptionsToggle> addedOptionsToggles = [];
 
     private static readonly List<Transform> activeOptionGameObjects = [];
     private static int currentSiblingIndex = 0;
-    private static int addedButtonsCount = 0;
+    private static int addedItemsCount = 0;
     private static readonly float menuEntryHeight = 55f;
 
     private static UIMenuOptions uIMenuOptions = PathUtil.GetUIMenuOptions(RelevantScene.TitleScreen);
@@ -30,6 +32,17 @@ public class IngameUIManager
     public static void AddOptionsButton(OptionsButton optionsButton)
     {
         addedOptionsButtons.Add(optionsButton);
+    }
+
+    public static void AddOptionsToggle(OptionsToggle optionsToggle)
+    {
+        addedOptionsToggles.Add(optionsToggle);
+    }
+
+    public static void RetriggerModifyingOptionsMenuTitleScreen()
+    {
+        // If a mod add items after Title Screen loads, allow them to trigger the modification again
+        ModifyOptionsMenu(RelevantScene.TitleScreen);
     }
 
     private static void GetActiveOptionGameObjects(RelevantScene relevantScene)
@@ -53,22 +66,34 @@ public class IngameUIManager
     private static void ModifyOptionsMenu(RelevantScene relevantScene)
     {
         GetActiveOptionGameObjects(relevantScene);
-        addedButtonsCount = 0;
+        addedItemsCount = 0;
+        foreach (OptionsToggle optionsToggle in addedOptionsToggles.Where(ot => ot.RelevantScenes.Contains(relevantScene) && !activeOptionGameObjects.Exists(actOb => actOb.name == ot.GameObjectName)))
+        {
+            ProcessOptionsToggle(optionsToggle, relevantScene);
+        }
         foreach (OptionsButton optionsButton in addedOptionsButtons.Where(ob => ob.RelevantScenes.Contains(relevantScene) && !activeOptionGameObjects.Exists(actOb => actOb.name == ob.GameObjectName)))
         {
-            ProcessObjectButton(optionsButton, relevantScene);
+            ProcessOptionsButton(optionsButton, relevantScene);
         }
         uIMenuOptions = PathUtil.GetUIMenuOptions(relevantScene);
         ModifyOptionsMenuNavigation(relevantScene);
     }
 
-    private static void ProcessObjectButton(OptionsButton optionsButton, RelevantScene relevantScene)
+    private static void ProcessOptionsToggle(OptionsToggle optionsToggle, RelevantScene relevantScene)
+    {
+        GameObject toggle = optionsToggle.AddOptionsToggle(relevantScene);
+        toggle.transform.SetSiblingIndex(currentSiblingIndex);
+        currentSiblingIndex += 1; //Increment the sibling index
+        addedItemsCount += 1;
+    }
+
+    private static void ProcessOptionsButton(OptionsButton optionsButton, RelevantScene relevantScene)
     {
         GameObject button = optionsButton.AddOptionsButton(relevantScene);
-        button?.transform.SetSiblingIndex(currentSiblingIndex);
+        button.transform.SetSiblingIndex(currentSiblingIndex);
         currentSiblingIndex += 1; //Increment the sibling index
         optionsButton.OptionsPrompt?.AddOptionsPrompt(relevantScene);
-        addedButtonsCount += 1;
+        addedItemsCount += 1;
     }
 
     private static void ModifyOptionsMenuNavigation(RelevantScene relevantScene)
@@ -78,13 +103,13 @@ public class IngameUIManager
         int accessibilityMenuIndex = activeOptionGameObjects.FindIndex(t => t.gameObject.name == "UI_AccessMenu");
         for (int i = 0; i < activeOptionGameObjects.Count; i++)
         {
-            if (accessibilityMenuIndex < i && i <= accessibilityMenuIndex + addedButtonsCount)
+            if (accessibilityMenuIndex < i && i <= accessibilityMenuIndex + addedItemsCount)
             {
-                newGrid[i] = activeOptionGameObjects[i].GetComponent<UIAction>();
+                newGrid[i] = activeOptionGameObjects[i].GetComponent<UIButton>();
             }
-            else if (i > accessibilityMenuIndex + addedButtonsCount)
+            else if (i > accessibilityMenuIndex + addedItemsCount)
             {
-                newGrid[i] = uIMenuOptions.grid[i - addedButtonsCount];
+                newGrid[i] = uIMenuOptions.grid[i - addedItemsCount];
             }
             else
             {
@@ -96,13 +121,13 @@ public class IngameUIManager
         string[] newCtxt = new string[10];
         for (int i = 0; i < activeOptionGameObjects.Count; i++)
         {
-            if (accessibilityMenuIndex < i && i <= accessibilityMenuIndex + addedButtonsCount)
+            if (accessibilityMenuIndex < i && i <= accessibilityMenuIndex + addedItemsCount)
             {
                 newCtxt[i] = "cts_" + activeOptionGameObjects[i].gameObject.name;
             }
-            else if (i > accessibilityMenuIndex + addedButtonsCount)
+            else if (i > accessibilityMenuIndex + addedItemsCount)
             {
-                newCtxt[i] = uIMenuOptions.ctxt[i - addedButtonsCount];
+                newCtxt[i] = uIMenuOptions.ctxt[i - addedItemsCount];
             }
             else
             {
@@ -164,7 +189,7 @@ public class IngameUIManager
         [HarmonyPrefix, HarmonyPatch(typeof(UIAction), nameof(UIAction.Action))]
         private static bool PreAction(UIAction __instance)
         {
-            if (registeredActions.Keys.Contains(__instance.actionId))
+            if (registeredActions.ContainsKey(__instance.actionId))
             {
                 RelevantScene relevantScene = RelevantScene.InGame;
                 if (SceneManager.GetActiveScene().name == "TitleScreen")
@@ -183,7 +208,7 @@ public class IngameUIManager
         [HarmonyPrefix, HarmonyPatch(typeof(UIMenuOptions), nameof(UIMenuOptions.Close))]
         private static bool PreClose(string id, bool value)
         {
-            if (registeredPrompts.Keys.Contains(id))
+            if (registeredPrompts.ContainsKey(id))
             {
                 RelevantScene relevantScene = RelevantScene.InGame;
                 if (SceneManager.GetActiveScene().name == "TitleScreen")
@@ -191,6 +216,25 @@ public class IngameUIManager
                     relevantScene = RelevantScene.TitleScreen;
                 }
                 registeredPrompts[id].Invoke(relevantScene, value);
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Intercepts toggle action for custom toggles
+        /// </summary>
+        [HarmonyPrefix, HarmonyPatch(typeof(UIMenuOptions), nameof(UIMenuOptions.Toggle))]
+        private static bool PreToggle(string id)
+        {
+            if (registeredToggles.ContainsKey(id))
+            {
+                RelevantScene relevantScene = RelevantScene.InGame;
+                if (SceneManager.GetActiveScene().name == "TitleScreen")
+                {
+                    relevantScene = RelevantScene.TitleScreen;
+                }
+                registeredToggles[id].Invoke(relevantScene);
                 return false;
             }
             return true;
