@@ -22,7 +22,7 @@ public class OptionsPrompt
         PathUtil.GetByPath(PathUtil.ParentScene(relevantScene), PathUtil.OptionsMenuPath(relevantScene) + GameObjectName)
         .GetComponent<UIPrompt>();
 
-    internal void AddOptionPrompt(IngameUIManager.RelevantScene relevantScene)
+    internal void AddOptionsPrompt(IngameUIManager.RelevantScene relevantScene)
     {
         string parentScene = PathUtil.ParentScene(relevantScene);
         string optionsMenuPath = PathUtil.OptionsMenuPath(relevantScene);

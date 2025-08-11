@@ -46,14 +46,10 @@ public class OptionsButton
             // If don't find the button already, go on to create it
         }
         GameObject optionsPanel = PathUtil.GetByPath(parentScene, optionsMenuPath + PathUtil.pathToOptionPanel);
-        GameObject baseButton = relevantScene switch
-        {
-            IngameUIManager.RelevantScene.InGame => PathUtil.GetByPath(parentScene, optionsMenuPath + PathUtil.pathToOptionPanel + "UI_ExitSession"), // Use Exit To Title as base if in game
-            IngameUIManager.RelevantScene.TitleScreen => PathUtil.GetByPath(parentScene, "UI_PauseCanvas/BGMask/OptionsPanels/MENU_KeyBindings_NEW/FirstMenu/ItemWindow/UI_Keyboard"), // Use Keyboard and Mouse controls button if on title screen
-            _ => throw new System.NotImplementedException("Invalid RelevantScene value"),
-        };
+        GameObject baseButton = PathUtil.GetByPath(parentScene, optionsMenuPath + PathUtil.pathToOptionPanel + "UI_ExitSession"); // Use Exit To Title as base
         GameObject newButtonObject = GameObject.Instantiate(baseButton, optionsPanel.transform);
         newButtonObject.name = GameObjectName;
+        newButtonObject.SetActive(true); // In case you are on title screen, Exit to Title would not have been active
         LocTextTMP newButtonText = newButtonObject.GetComponentInChildren<LocTextTMP>();
         newButtonText.locId = ButtonText;
         if (!IngameUIManager.modifiedStrings.Contains(newButtonText.locId))
