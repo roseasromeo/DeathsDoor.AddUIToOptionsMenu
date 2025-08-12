@@ -1,3 +1,4 @@
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,16 +13,16 @@ public class OptionsToggle
     public string ToggleID;
     public List<IngameUIManager.RelevantScene> RelevantScenes = [];
     public Action<bool> ToggleAction;
-    public Func<bool> ToggleInitializer;
+    public Func<bool> ToggleValueInitializer;
 
-    public OptionsToggle(string toggleText, string gameObjectName, string toggleID, List<IngameUIManager.RelevantScene> relevantScenes, Action<bool> toggleAction, Func<bool> toggleInitializer)
+    public OptionsToggle(string toggleText, string gameObjectName, string toggleID, List<IngameUIManager.RelevantScene> relevantScenes, Action<bool> toggleAction, Func<bool> toggleValueInitializer)
     {
         ToggleText = toggleText;
         GameObjectName = gameObjectName;
         ToggleID = toggleID;
         RelevantScenes = relevantScenes;
         ToggleAction = toggleAction;
-        ToggleInitializer = toggleInitializer;
+        ToggleValueInitializer = toggleValueInitializer;
     }
 
     private UIToggle GetUIToggle(IngameUIManager.RelevantScene relevantScene) =>
@@ -52,7 +53,9 @@ public class OptionsToggle
             IngameUIManager.modifiedStrings.Add(newToggleText.locId);
         }
         newToggleObject.GetComponent<UIToggle>().id = ToggleID;
-        newToggleObject.GetComponent<UIToggle>().master.toggleStates[ToggleID] = ToggleInitializer();
+        bool initialToggleValue = ToggleValueInitializer();
+        newToggleObject.GetComponent<UIToggle>().master.toggleStates[ToggleID] = initialToggleValue;
+        newToggleObject.GetComponent<UIToggle>().toggle.SetActive(initialToggleValue);
         IngameUIManager.registeredToggles[ToggleID] = Toggle;
         return newToggleObject;
     }
@@ -63,6 +66,18 @@ public class OptionsToggle
         UIMenuOptions uIMenuOptions = uIToggle.master;
         bool currentState = uIMenuOptions.GetToggleState(ToggleID);
         uIMenuOptions.toggleStates[ToggleID] = !currentState;
+        uIToggle.toggle.SetActive(!currentState);
         ToggleAction.Invoke(!currentState);
+    }
+
+    [HarmonyPatch]
+    private class Patches
+    {
+        [HarmonyPrefix, HarmonyPatch(typeof(UIToggle), nameof(UIToggle.init))]
+        private static bool InitPatch(UIToggle __instance)
+        {
+            // If it's one of our toggles, we've done the init already
+            return !IngameUIManager.registeredToggles.ContainsKey(__instance.id);
+        }
     }
 }
