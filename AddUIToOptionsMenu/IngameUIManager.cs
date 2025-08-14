@@ -14,13 +14,14 @@ public class IngameUIManager
 
     public static IngameUIManager Instance => instance;
 
-    public static List<string> modifiedStrings = [];
+    internal static List<string> modifiedStrings = [];
+    internal static readonly List<string> menuItemGameObjectNames = [];
     internal static Dictionary<string, Action<RelevantScene, UIAction>> registeredActions = [];
     internal static Dictionary<string, Action<RelevantScene, bool>> registeredPrompts = [];
     internal static Dictionary<string, Action<RelevantScene>> registeredToggles = [];
 
-    private static readonly List<OptionsButton> addedOptionsButtons = [];
-    private static readonly List<OptionsToggle> addedOptionsToggles = [];
+    internal static readonly List<OptionsButton> addedOptionsButtons = [];
+    internal static readonly List<OptionsToggle> addedOptionsToggles = [];
 
     private static readonly List<Transform> activeOptionGameObjects = [];
     private static int currentSiblingIndex = 0;
@@ -31,11 +32,22 @@ public class IngameUIManager
 
     public static void AddOptionsButton(OptionsButton optionsButton)
     {
+        if (menuItemGameObjectNames.Contains(optionsButton.GameObjectName))
+        {
+            throw new ArgumentException($"GameObject names must be unique. Report to the mod developer that {optionsButton.GameObjectName} is already a used GameObject name by another mod. Suggestion for mod developer: prefix your provided GameObject names with the name of your mod.", "optionsButton.GameObjectName");
+        }
+        menuItemGameObjectNames.Add(optionsButton.GameObjectName);
         addedOptionsButtons.Add(optionsButton);
+        
     }
 
     public static void AddOptionsToggle(OptionsToggle optionsToggle)
     {
+        if (menuItemGameObjectNames.Contains(optionsToggle.GameObjectName))
+        {
+            throw new ArgumentException($"GameObject names must be unique. Report to the mod developer that {optionsToggle.GameObjectName} is already a used GameObject name by another mod. Suggestion for mod developer: prefix your provided GameObject names with the name of your mod.", "optionsToggle.GameObjectName");
+        }
+        menuItemGameObjectNames.Add(optionsToggle.GameObjectName);
         addedOptionsToggles.Add(optionsToggle);
     }
 
