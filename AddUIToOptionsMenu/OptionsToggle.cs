@@ -26,7 +26,12 @@ public class OptionsToggle : OptionsMenuItem
         PathUtil.GetByPath(PathUtil.ParentScene(relevantScene), PathUtil.OptionsMenuPath(relevantScene) + PathUtil.pathToOptionPanel + GameObjectName)
         .GetComponent<UIToggle>();
 
-    public GameObject AddOptionsToggle(IngameUIManager.RelevantScene relevantScene)
+    internal override GameObject AddOptionsMenuItem(IngameUIManager.RelevantScene relevantScene)
+    {
+        return AddOptionsToggle(relevantScene);
+    }
+
+    private GameObject AddOptionsToggle(IngameUIManager.RelevantScene relevantScene)
     {
         string parentScene = PathUtil.ParentScene(relevantScene);
         string optionsMenuPath = PathUtil.OptionsMenuPath(relevantScene);

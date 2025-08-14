@@ -30,7 +30,12 @@ public class OptionsButton : OptionsMenuItem
         ContextText = contextText;
     }
 
-    public GameObject AddOptionsButton(IngameUIManager.RelevantScene relevantScene)
+    internal override GameObject AddOptionsMenuItem(IngameUIManager.RelevantScene relevantScene)
+    {
+        return AddOptionsButton(relevantScene);
+    }
+
+    private GameObject AddOptionsButton(IngameUIManager.RelevantScene relevantScene)
     {
         string parentScene = PathUtil.ParentScene(relevantScene);
         string optionsMenuPath = PathUtil.OptionsMenuPath(relevantScene);
@@ -60,6 +65,7 @@ public class OptionsButton : OptionsMenuItem
             IngameUIManager.registeredActions[ID] = OptionsPrompt.OpenPromptAction;
             OptionsPrompt.ActionId = ID;
             IngameUIManager.registeredPrompts[ID] = OptionsPrompt.ClosePromptAction;
+            OptionsPrompt.AddOptionsPrompt(relevantScene);
         }
         else if (ButtonAction != null)
         {
