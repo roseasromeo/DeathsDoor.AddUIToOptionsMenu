@@ -5,31 +5,29 @@ using UnityEngine;
 namespace DDoor.AddUIToOptionsMenu;
 
 #nullable enable
-public class OptionsButton
+public class OptionsButton : OptionsMenuItem
 {
-    public string ButtonText;
-    public string GameObjectName;
-    public string ActionID;
-    public List<IngameUIManager.RelevantScene> RelevantScenes = [];
     public OptionsPrompt? OptionsPrompt;
-    public Action<IngameUIManager.RelevantScene,UIAction>? ButtonAction; //Mutually exclusive with optionsPrompt
+    public Action<IngameUIManager.RelevantScene, UIAction>? ButtonAction; //Mutually exclusive with optionsPrompt
 
-    public OptionsButton(string buttonText, string gameObjectName, string actionID, List<IngameUIManager.RelevantScene> relevantScenes, OptionsPrompt optionsPrompt)
+    public OptionsButton(string itemText, string gameObjectName, string id, List<IngameUIManager.RelevantScene> relevantScenes, OptionsPrompt optionsPrompt, string contextText = "")
     {
-        ButtonText = buttonText;
+        ItemText = itemText;
         GameObjectName = gameObjectName;
-        ActionID = actionID;
+        ID = id;
         RelevantScenes = relevantScenes;
         OptionsPrompt = optionsPrompt;
+        ContextText = contextText;
     }
 
-    public OptionsButton(string buttonText, string gameObjectName, string actionID, List<IngameUIManager.RelevantScene> relevantScenes, Action<IngameUIManager.RelevantScene,UIAction> buttonAction)
+    public OptionsButton(string itemText, string gameObjectName, string id, List<IngameUIManager.RelevantScene> relevantScenes, Action<IngameUIManager.RelevantScene, UIAction> buttonAction, string contextText = "")
     {
-        ButtonText = buttonText;
+        ItemText = itemText;
         GameObjectName = gameObjectName;
-        ActionID = actionID;
+        ID = id;
         RelevantScenes = relevantScenes;
         ButtonAction = buttonAction;
+        ContextText = contextText;
     }
 
     public GameObject AddOptionsButton(IngameUIManager.RelevantScene relevantScene)
@@ -51,7 +49,7 @@ public class OptionsButton
         newButtonObject.name = GameObjectName;
         newButtonObject.SetActive(true); // In case you are on title screen, Exit to Title would not have been active
         LocTextTMP newButtonText = newButtonObject.GetComponentInChildren<LocTextTMP>();
-        newButtonText.locId = ButtonText;
+        newButtonText.locId = ItemText;
         if (!IngameUIManager.modifiedStrings.Contains(newButtonText.locId))
         {
             IngameUIManager.modifiedStrings.Add(newButtonText.locId);
@@ -59,15 +57,15 @@ public class OptionsButton
 
         if (OptionsPrompt != null)
         {
-            IngameUIManager.registeredActions[ActionID] = OptionsPrompt.OpenPromptAction;
-            OptionsPrompt.ActionId = ActionID;
-            IngameUIManager.registeredPrompts[ActionID] = OptionsPrompt.ClosePromptAction;
+            IngameUIManager.registeredActions[ID] = OptionsPrompt.OpenPromptAction;
+            OptionsPrompt.ActionId = ID;
+            IngameUIManager.registeredPrompts[ID] = OptionsPrompt.ClosePromptAction;
         }
         else if (ButtonAction != null)
         {
-            IngameUIManager.registeredActions[ActionID] = ButtonAction;
+            IngameUIManager.registeredActions[ID] = ButtonAction;
         }
-        newButtonObject.GetComponent<UIAction>().actionId = ActionID;
+        newButtonObject.GetComponent<UIAction>().actionId = ID;
         return newButtonObject;
     }
 }
