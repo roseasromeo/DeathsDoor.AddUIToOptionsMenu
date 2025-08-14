@@ -1,6 +1,7 @@
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace DDoor.AddUIToOptionsMenu;
 
@@ -14,17 +15,14 @@ public abstract class OptionsMenuItem
 
     private static string LookUpOptionsMenuContext(string GameObjectName)
     {
-        if (IngameUIManager.addedOptionsButtons.Exists(ob => ob.GameObjectName == GameObjectName))
+        if (IngameUIManager.addedOptionsMenuItems.Exists(ob => ob.GameObjectName == GameObjectName))
         {
-            return IngameUIManager.addedOptionsButtons.First(ob => ob.GameObjectName == GameObjectName).ContextText;
-        }
-        if (IngameUIManager.addedOptionsToggles.Exists(ob => ob.GameObjectName == GameObjectName))
-        {
-            return IngameUIManager.addedOptionsToggles.First(ob => ob.GameObjectName == GameObjectName).ContextText;
+            return IngameUIManager.addedOptionsMenuItems.First(menuItem => menuItem.GameObjectName == GameObjectName).ContextText;
         }
         return "No context string found for this menu item";
     }
 
+    internal abstract GameObject AddOptionsMenuItem(IngameUIManager.RelevantScene relevantScene);
 
     [HarmonyPatch]
     private class Patches

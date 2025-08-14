@@ -20,8 +20,7 @@ public class IngameUIManager
     internal static Dictionary<string, Action<RelevantScene, bool>> registeredPrompts = [];
     internal static Dictionary<string, Action<RelevantScene>> registeredToggles = [];
 
-    internal static readonly List<OptionsButton> addedOptionsButtons = [];
-    internal static readonly List<OptionsToggle> addedOptionsToggles = [];
+    internal static readonly List<OptionsMenuItem> addedOptionsMenuItems = [];
 
     private static readonly List<Transform> activeOptionGameObjects = [];
     private static int currentSiblingIndex = 0;
@@ -30,25 +29,15 @@ public class IngameUIManager
 
     private static UIMenuOptions uIMenuOptions = PathUtil.GetUIMenuOptions(RelevantScene.TitleScreen);
 
-    public static void AddOptionsButton(OptionsButton optionsButton)
+    public static void AddOptionsMenuItem(OptionsMenuItem optionsMenuItem)
     {
-        if (menuItemGameObjectNames.Contains(optionsButton.GameObjectName))
+        if (menuItemGameObjectNames.Contains(optionsMenuItem.GameObjectName))
         {
-            throw new ArgumentException($"GameObject names must be unique. Report to the mod developer that {optionsButton.GameObjectName} is already a used GameObject name by another mod. Suggestion for mod developer: prefix your provided GameObject names with the name of your mod.", "optionsButton.GameObjectName");
+            throw new ArgumentException($"GameObject names must be unique. Report to the mod developer that {optionsMenuItem.GameObjectName} is already a used GameObject name by another mod. Suggestion for mod developer: prefix your provided GameObject names with the name of your mod.", "optionsButton.GameObjectName");
         }
-        menuItemGameObjectNames.Add(optionsButton.GameObjectName);
-        addedOptionsButtons.Add(optionsButton);
+        menuItemGameObjectNames.Add(optionsMenuItem.GameObjectName);
+        addedOptionsMenuItems.Add(optionsMenuItem);
         
-    }
-
-    public static void AddOptionsToggle(OptionsToggle optionsToggle)
-    {
-        if (menuItemGameObjectNames.Contains(optionsToggle.GameObjectName))
-        {
-            throw new ArgumentException($"GameObject names must be unique. Report to the mod developer that {optionsToggle.GameObjectName} is already a used GameObject name by another mod. Suggestion for mod developer: prefix your provided GameObject names with the name of your mod.", "optionsToggle.GameObjectName");
-        }
-        menuItemGameObjectNames.Add(optionsToggle.GameObjectName);
-        addedOptionsToggles.Add(optionsToggle);
     }
 
     public static void RetriggerModifyingOptionsMenuTitleScreen()
@@ -79,32 +68,19 @@ public class IngameUIManager
     {
         GetActiveOptionGameObjects(relevantScene);
         addedItemsCount = 0;
-        foreach (OptionsToggle optionsToggle in addedOptionsToggles.Where(ot => ot.RelevantScenes.Contains(relevantScene) && !activeOptionGameObjects.Exists(actOb => actOb.name == ot.GameObjectName)))
+        foreach (OptionsMenuItem optionsMenuItem in addedOptionsMenuItems.Where(menuItem => menuItem.RelevantScenes.Contains(relevantScene) && !activeOptionGameObjects.Exists(actOb => actOb.name == menuItem.GameObjectName)))
         {
-            ProcessOptionsToggle(optionsToggle, relevantScene);
-        }
-        foreach (OptionsButton optionsButton in addedOptionsButtons.Where(ob => ob.RelevantScenes.Contains(relevantScene) && !activeOptionGameObjects.Exists(actOb => actOb.name == ob.GameObjectName)))
-        {
-            ProcessOptionsButton(optionsButton, relevantScene);
+            ProcessOptionsMenuItem(optionsMenuItem, relevantScene);
         }
         uIMenuOptions = PathUtil.GetUIMenuOptions(relevantScene);
         ModifyOptionsMenuNavigation(relevantScene);
     }
 
-    private static void ProcessOptionsToggle(OptionsToggle optionsToggle, RelevantScene relevantScene)
+    private static void ProcessOptionsMenuItem(OptionsMenuItem optionsMenuItem, RelevantScene relevantScene)
     {
-        GameObject toggle = optionsToggle.AddOptionsToggle(relevantScene);
-        toggle.transform.SetSiblingIndex(currentSiblingIndex);
+        GameObject menuItem = optionsMenuItem.AddOptionsMenuItem(relevantScene);
+        menuItem.transform.SetSiblingIndex(currentSiblingIndex);
         currentSiblingIndex += 1; //Increment the sibling index
-        addedItemsCount += 1;
-    }
-
-    private static void ProcessOptionsButton(OptionsButton optionsButton, RelevantScene relevantScene)
-    {
-        GameObject button = optionsButton.AddOptionsButton(relevantScene);
-        button.transform.SetSiblingIndex(currentSiblingIndex);
-        currentSiblingIndex += 1; //Increment the sibling index
-        optionsButton.OptionsPrompt?.AddOptionsPrompt(relevantScene);
         addedItemsCount += 1;
     }
 
