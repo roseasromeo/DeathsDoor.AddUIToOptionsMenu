@@ -6,23 +6,20 @@ using UnityEngine;
 namespace DDoor.AddUIToOptionsMenu;
 
 #nullable enable
-public class OptionsToggle
+public class OptionsToggle : OptionsMenuItem
 {
-    public string ToggleText;
-    public string GameObjectName;
-    public string ToggleID;
-    public List<IngameUIManager.RelevantScene> RelevantScenes = [];
     public Action<bool> ToggleAction;
     public Func<bool> ToggleValueInitializer;
 
-    public OptionsToggle(string toggleText, string gameObjectName, string toggleID, List<IngameUIManager.RelevantScene> relevantScenes, Action<bool> toggleAction, Func<bool> toggleValueInitializer)
+    public OptionsToggle(string itemText, string gameObjectName, string id, List<IngameUIManager.RelevantScene> relevantScenes, Action<bool> toggleAction, Func<bool> toggleValueInitializer, string contextText = "")
     {
-        ToggleText = toggleText;
+        ItemText = itemText;
         GameObjectName = gameObjectName;
-        ToggleID = toggleID;
+        ID = id;
         RelevantScenes = relevantScenes;
         ToggleAction = toggleAction;
         ToggleValueInitializer = toggleValueInitializer;
+        ContextText = contextText;
     }
 
     private UIToggle GetUIToggle(IngameUIManager.RelevantScene relevantScene) =>
@@ -47,16 +44,16 @@ public class OptionsToggle
         GameObject newToggleObject = GameObject.Instantiate(baseToggle, optionsPanel.transform);
         newToggleObject.name = GameObjectName;
         LocTextTMP newToggleText = newToggleObject.GetComponentInChildren<LocTextTMP>();
-        newToggleText.locId = ToggleText;
+        newToggleText.locId = ItemText;
         if (!IngameUIManager.modifiedStrings.Contains(newToggleText.locId))
         {
             IngameUIManager.modifiedStrings.Add(newToggleText.locId);
         }
-        newToggleObject.GetComponent<UIToggle>().id = ToggleID;
+        newToggleObject.GetComponent<UIToggle>().id = ID;
         bool initialToggleValue = ToggleValueInitializer();
-        newToggleObject.GetComponent<UIToggle>().master.toggleStates[ToggleID] = initialToggleValue;
+        newToggleObject.GetComponent<UIToggle>().master.toggleStates[ID] = initialToggleValue;
         newToggleObject.GetComponent<UIToggle>().toggle.SetActive(initialToggleValue);
-        IngameUIManager.registeredToggles[ToggleID] = Toggle;
+        IngameUIManager.registeredToggles[ID] = Toggle;
         return newToggleObject;
     }
 
@@ -64,8 +61,8 @@ public class OptionsToggle
     {
         UIToggle uIToggle = GetUIToggle(relevantScene);
         UIMenuOptions uIMenuOptions = uIToggle.master;
-        bool currentState = uIMenuOptions.GetToggleState(ToggleID);
-        uIMenuOptions.toggleStates[ToggleID] = !currentState;
+        bool currentState = uIMenuOptions.GetToggleState(ID);
+        uIMenuOptions.toggleStates[ID] = !currentState;
         uIToggle.toggle.SetActive(!currentState);
         ToggleAction.Invoke(!currentState);
     }
