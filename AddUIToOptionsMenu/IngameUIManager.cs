@@ -106,7 +106,7 @@ public class IngameUIManager
         }
         uIMenuOptions.grid = newGrid;
 
-        string[] newCtxt = new string[10];
+        string[] newCtxt = new string[activeOptionGameObjects.Count];
         for (int i = 0; i < activeOptionGameObjects.Count; i++)
         {
             if (accessibilityMenuIndex < i && i <= accessibilityMenuIndex + addedItemsCount)

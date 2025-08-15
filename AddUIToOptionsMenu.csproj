@@ -5,7 +5,7 @@
 		<AssemblyTitle>Add UI to Options Menu</AssemblyTitle>
 		<Product>AddUIToOptionsMenu</Product>
 		<Description>Adds UI Elements to the Options Menu in Death's Door</Description>
-		<Version>0.3.0</Version>
+		<Version>0.3.1</Version>
 		<TargetFramework>net472</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<RestoreAdditionalProjectSources>
