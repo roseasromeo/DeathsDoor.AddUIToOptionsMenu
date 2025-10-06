@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AddUIToOptionsMenu", "AddUIToOptionsMenu.csproj", "{9AE9C38B-F4CB-F146-E0DC-6F288B9ECF66}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9AE9C38B-F4CB-F146-E0DC-6F288B9ECF66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AE9C38B-F4CB-F146-E0DC-6F288B9ECF66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AE9C38B-F4CB-F146-E0DC-6F288B9ECF66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AE9C38B-F4CB-F146-E0DC-6F288B9ECF66}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D0B11AEA-D650-4C3E-BBEE-9BE9CD478DE3}
+	EndGlobalSection
+EndGlobal

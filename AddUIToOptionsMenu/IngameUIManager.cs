@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 namespace DDoor.AddUIToOptionsMenu;
 
 #nullable enable
-public class IngameUIManager
+public class IngameUIManager : MonoBehaviour
 {
     public static readonly IngameUIManager instance = new();
 
@@ -27,23 +27,34 @@ public class IngameUIManager
     private static int addedItemsCount = 0;
     private static readonly float menuEntryHeight = 55f;
 
-    private static UIMenuOptions uIMenuOptions = PathUtil.GetUIMenuOptions(RelevantScene.TitleScreen);
+    private static UIMenuOptions? uIMenuOptions;
+
+    private static bool retryPending = false;
+    private static RelevantScene retryScene = RelevantScene.TitleScreen;
 
     public static void AddOptionsMenuItem(OptionsMenuItem optionsMenuItem)
     {
         if (menuItemGameObjectNames.Contains(optionsMenuItem.GameObjectName))
         {
-            throw new ArgumentException($"GameObject names must be unique. Report to the mod developer that {optionsMenuItem.GameObjectName} is already a used GameObject name by another mod. Suggestion for mod developer: prefix your provided GameObject names with the name of your mod.", "optionsButton.GameObjectName");
+            throw new ArgumentException($"GameObject names must be unique. Report to the mod developer that {optionsMenuItem.GameObjectName} is already a used GameObject name by another mod. Suggestion for mod developer: prefix your provided GameObject names with the name of your mod.", "optionsMenuItem.GameObjectName");
         }
         menuItemGameObjectNames.Add(optionsMenuItem.GameObjectName);
         addedOptionsMenuItems.Add(optionsMenuItem);
-        
+
     }
 
     public static void RetriggerModifyingOptionsMenuTitleScreen()
     {
         // If a mod add items after Title Screen loads, allow them to trigger the modification again
-        ModifyOptionsMenu(RelevantScene.TitleScreen);
+        TryModifyOptionsMenu(RelevantScene.TitleScreen);
+    }
+
+    private void Update()
+    {
+        if (retryPending)
+        {
+            TryModifyOptionsMenu(retryScene);
+        }
     }
 
     private static void GetActiveOptionGameObjects(RelevantScene relevantScene)
@@ -64,17 +75,28 @@ public class IngameUIManager
     }
 
 
-    private static void ModifyOptionsMenu(RelevantScene relevantScene)
+    private static void TryModifyOptionsMenu(RelevantScene relevantScene)
     {
-        GetActiveOptionGameObjects(relevantScene);
-        addedItemsCount = 0;
-        foreach (OptionsMenuItem optionsMenuItem in addedOptionsMenuItems.Where(menuItem => menuItem.RelevantScenes.Contains(relevantScene) && !activeOptionGameObjects.Exists(actOb => actOb.name == menuItem.GameObjectName)))
+        try
         {
-            ProcessOptionsMenuItem(optionsMenuItem, relevantScene);
+            GetActiveOptionGameObjects(relevantScene);
+            addedItemsCount = 0;
+            foreach (OptionsMenuItem optionsMenuItem in addedOptionsMenuItems.Where(menuItem => menuItem.RelevantScenes.Contains(relevantScene) && !activeOptionGameObjects.Exists(actOb => actOb.name == menuItem.GameObjectName)))
+            {
+                ProcessOptionsMenuItem(optionsMenuItem, relevantScene);
+            }
+            uIMenuOptions = PathUtil.GetUIMenuOptions(relevantScene);
+            ModifyOptionsMenuNavigation(relevantScene);
+            retryPending = false;
         }
-        uIMenuOptions = PathUtil.GetUIMenuOptions(relevantScene);
-        ModifyOptionsMenuNavigation(relevantScene);
+        catch (InvalidOperationException)
+        {
+            retryPending = true;
+            retryScene = relevantScene;
+        }
     }
+
+
 
     private static void ProcessOptionsMenuItem(OptionsMenuItem optionsMenuItem, RelevantScene relevantScene)
     {
@@ -86,6 +108,10 @@ public class IngameUIManager
 
     private static void ModifyOptionsMenuNavigation(RelevantScene relevantScene)
     {
+        if (uIMenuOptions == null)
+        {
+            return;
+        }
         GetActiveOptionGameObjects(relevantScene);
         UIButton[] newGrid = new UIButton[activeOptionGameObjects.Count];
         int accessibilityMenuIndex = activeOptionGameObjects.FindIndex(t => t.gameObject.name == "UI_AccessMenu");
@@ -146,11 +172,11 @@ public class IngameUIManager
 #pragma warning disable Harmony003 // Harmony non-ref patch parameters modified
             if (scene.name == "_PLAYER")
             {
-                ModifyOptionsMenu(RelevantScene.InGame);
+                TryModifyOptionsMenu(RelevantScene.InGame);
             }
             else if (scene.name == "TitleScreen")
             {
-                ModifyOptionsMenu(RelevantScene.TitleScreen);
+                TryModifyOptionsMenu(RelevantScene.TitleScreen);
             }
 #pragma warning restore Harmony003 // Harmony non-ref patch parameters modified
         }
